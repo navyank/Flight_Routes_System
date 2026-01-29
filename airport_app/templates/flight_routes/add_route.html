@@ -1,0 +1,252 @@
+<!-- templates/flight_routes/add_route.html -->
+
+{% extends 'flight_routes/base.html' %}
+
+{% block title %}Add Airport Route - Flight Routes System{% endblock %}
+
+{% block page_title %}Add Airport Route{% endblock %}
+{% block page_subtitle %}Create a new airport node in your route network{% endblock %}
+
+{% block breadcrumb %}
+{{ block.super }} <i class="fas fa-chevron-right"></i> <span>Add Route</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: 25px;
+    }
+
+    .form-card {
+        height: fit-content;
+    }
+
+    .tree-visualization {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--border-color);
+    }
+
+    .tree-node {
+        background: var(--light-bg);
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+    }
+
+    .tree-node:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .tree-node-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .tree-node-code {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .tree-node-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge-root {
+        background: rgba(139, 92, 246, 0.1);
+        color: var(--secondary-color);
+    }
+
+    .badge-left {
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+    }
+
+    .badge-right {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--success-color);
+    }
+
+    .tree-node-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-secondary);
+    }
+
+    .info-item i {
+        color: var(--primary-color);
+    }
+
+    .tree-node-children {
+        margin-left: 30px;
+        border-left: 2px solid var(--border-color);
+        padding-left: 15px;
+        margin-top: 15px;
+    }
+
+    .nodes-list {
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .empty-tree {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--text-secondary);
+    }
+
+    .empty-tree i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.3;
+    }
+
+    @media (max-width: 1024px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-grid">
+    <!-- Form Section -->
+    <div>
+        <div class="card form-card">
+            <div class="card-header">
+                <h3><i class="fas fa-plus-circle"></i> Create New Airport Node</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="id_airport_code">
+                            <i class="fas fa-plane"></i> Airport Code *
+                        </label>
+                        {{ form.airport_code }}
+                        {% if form.airport_code.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.airport_code.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <small class="form-text">e.g., DXB, JFK, LHR</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_parent">
+                            <i class="fas fa-sitemap"></i> Parent Node
+                        </label>
+                        {{ form.parent }}
+                        {% if form.parent.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.parent.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <small class="form-text">Select parent or leave empty for root node</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_position">
+                            <i class="fas fa-arrows-alt-h"></i> Position *
+                        </label>
+                        {{ form.position }}
+                        {% if form.position.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.position.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <small class="form-text">ROOT for top node, L/R for children</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_duration">
+                            <i class="fas fa-route"></i> Duration (km) *
+                        </label>
+                        {{ form.duration }}
+                        {% if form.duration.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.duration.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        <small class="form-text">Distance in kilometers</small>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-save"></i> Create Airport Node
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tree Visualization Section -->
+    <div>
+        <div class="tree-visualization">
+            <h3 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-project-diagram"></i>
+                Route Network ({{ nodes.count }} nodes)
+            </h3>
+
+            {% if nodes %}
+            <div class="nodes-list">
+                {% for root in root_nodes %}
+                    {% include 'flight_routes/tree_node.html' with node=root %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-tree">
+                <i class="fas fa-folder-open"></i>
+                <p>No routes created yet</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

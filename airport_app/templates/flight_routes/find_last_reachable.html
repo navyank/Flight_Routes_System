@@ -1,0 +1,249 @@
+{% extends 'flight_routes/base.html' %}
+
+{% block title %}Find Last Reachable Node - Flight Routes System{% endblock %}
+
+{% block page_title %}Find Last Reachable Node{% endblock %}
+{% block page_subtitle %}Question 1: Traverse route and find the last reachable airport{% endblock %}
+
+{% block breadcrumb %}
+{{ block.super }} <i class="fas fa-chevron-right"></i> <span>Find Last Reachable</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .instruction-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+        border: 2px solid var(--primary-color);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .instruction-card h4 {
+        color: var(--primary-color);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .instruction-card p {
+        color: var(--text-primary);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        border: 2px solid var(--success-color);
+        overflow: hidden;
+        margin-top: 30px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .result-header {
+        background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+        color: white;
+        padding: 20px 25px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .result-header i {
+        font-size: 24px;
+    }
+
+    .result-body {
+        padding: 30px 25px;
+    }
+
+    .result-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px;
+        background: var(--light-bg);
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+
+    .result-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .result-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .result-value {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .airport-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        margin: 0 auto 20px;
+    }
+
+    .direction-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        background: rgba(59, 130, 246, 0.1);
+        color: var(--primary-color);
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <!-- Instructions -->
+    <div class="instruction-card">
+        <h4>
+            <i class="fas fa-info-circle"></i>
+           Last Reachable Node
+        </h4>
+        <p>
+            Select a starting airport node and choose a direction (Left or Right). 
+            The system will continuously traverse through connected nodes in that direction 
+            until it reaches the last reachable airport .
+        </p>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-search"></i> Search Configuration</h3>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="{{ form.start_node.id_for_label }}">
+                        <i class="fas fa-plane-departure"></i> {{ form.start_node.label }}
+                    </label>
+                    {{ form.start_node }}
+                    {% if form.start_node.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.start_node.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <small class="form-text">Choose your starting point</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.direction.id_for_label }}">
+                        <i class="fas fa-arrows-alt-h"></i> {{ form.direction.label }}
+                    </label>
+                    {{ form.direction }}
+                    {% if form.direction.errors %}
+                        <ul class="errorlist">
+                            {% for error in form.direction.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <small class="form-text">Select traversal direction</small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fas fa-search-location"></i> Find Last Reachable Node
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results -->
+    {% if result %}
+    <div class="result-card">
+        <div class="result-header">
+            <i class="fas fa-check-circle"></i>
+            <h3 style="margin: 0;">Last Reachable Node Found</h3>
+        </div>
+        <div class="result-body">
+            <div class="airport-icon">
+                <i class="fas fa-plane-arrival"></i>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Airport Code
+                </div>
+                <div class="result-value">{{ result.airport_code }}</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">
+                    <i class="fas fa-route"></i>
+                    Duration/Distance
+                </div>
+                <div class="result-value">{{ result.duration }} km</div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">
+                    <i class="fas fa-compass"></i>
+                    Position
+                </div>
+                <div class="result-value">
+                    <span class="direction-indicator">
+                        <i class="fas fa-location-arrow"></i>
+                        {{ result.get_position_display }}
+                    </span>
+                </div>
+            </div>
+
+            {% if result.parent %}
+            <div class="result-item">
+                <div class="result-label">
+                    <i class="fas fa-level-up-alt"></i>
+                    Parent Node
+                </div>
+                <div class="result-value">{{ result.parent.airport_code }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,284 @@
+{% extends 'flight_routes/base.html' %}
+
+{% block title %}Longest Duration - Flight Routes System{% endblock %}
+
+{% block page_title %}Longest Duration Airport{% endblock %}
+{% block page_subtitle %}Question 2: Airport node with the highest duration value{% endblock %}
+
+{% block breadcrumb %}
+{{ block.super }} <i class="fas fa-chevron-right"></i> <span>Longest Duration</span>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .info-banner {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+        border: 2px solid var(--success-color);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .info-banner-icon {
+        width: 50px;
+        height: 50px;
+        background: var(--success-color);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        flex-shrink: 0;
+    }
+
+    .info-banner-content h4 {
+        color: var(--success-color);
+        margin: 0 0 5px 0;
+        font-size: 16px;
+    }
+
+    .info-banner-content p {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 14px;
+    }
+
+    .champion-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 3px solid var(--success-color);
+        animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    .champion-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        padding: 40px 30px;
+        text-align: center;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .champion-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .trophy-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 40px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .champion-title {
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 10px;
+        opacity: 0.9;
+        position: relative;
+        z-index: 1;
+    }
+
+    .champion-code {
+        font-size: 36px;
+        font-weight: 700;
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .champion-body {
+        padding: 30px;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .stat-box {
+        background: var(--light-bg);
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        background: white;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 12px;
+        font-size: 22px;
+        color: var(--success-color);
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .no-data-card {
+        background: white;
+        border-radius: 12px;
+        padding: 60px 30px;
+        text-align: center;
+        border: 2px dashed var(--border-color);
+    }
+
+    .no-data-card i {
+        font-size: 64px;
+        color: var(--text-secondary);
+        opacity: 0.3;
+        margin-bottom: 20px;
+    }
+
+    .no-data-card h3 {
+        font-size: 20px;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+
+    .no-data-card p {
+        color: var(--text-secondary);
+        margin-bottom: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="result-container">
+    <!-- Info Banner -->
+    <div class="info-banner">
+        <div class="info-banner-icon">
+            <i class="fas fa-arrow-up"></i>
+        </div>
+        <div class="info-banner-content">
+            <h4>Longest Duration Analysis</h4>
+            <p>This displays the airport node with the maximum duration value in your entire route network.</p>
+        </div>
+    </div>
+
+    {% if node %}
+    <!-- Champion Card -->
+    <div class="champion-card">
+        <div class="champion-header">
+            <div class="trophy-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="champion-title">Longest Duration Airport</div>
+            <h1 class="champion-code">{{ node.airport_code }}</h1>
+        </div>
+
+        <div class="champion-body">
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="stat-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <div class="stat-label">Duration</div>
+                    <div class="stat-value">{{ node.duration }} km</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-icon">
+                        <i class="fas fa-map-pin"></i>
+                    </div>
+                    <div class="stat-label">Position</div>
+                    <div class="stat-value" style="font-size: 18px;">
+                        {{ node.get_position_display }}
+                    </div>
+                </div>
+
+                {% if node.parent %}
+                <div class="stat-box" style="grid-column: span 2;">
+                    <div class="stat-icon">
+                        <i class="fas fa-level-up-alt"></i>
+                    </div>
+                    <div class="stat-label">Parent Node</div>
+                    <div class="stat-value" style="font-size: 20px;">
+                        {{ node.parent.airport_code }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div style="margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border-color); text-align: center;">
+                <a href="{% url 'add_route' %}" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> View All Routes
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No Data State -->
+    <div class="no-data-card">
+        <i class="fas fa-plane-slash"></i>
+        <h3>No Airport Routes Available</h3>
+        <p>Create your first airport route to see duration analysis</p>
+        <a href="{% url 'add_route' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create First Route
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+<div class="tree-node">
+    <div class="tree-node-header">
+        <div class="tree-node-code">
+            <i class="fas fa-plane-arrival"></i>
+            {{ node.airport_code }}
+        </div>
+        <span class="tree-node-badge badge-{{ node.position|lower }}">
+            <i class="fas fa-map-pin"></i>
+            {{ node.get_position_display }}
+        </span>
+    </div>
+    
+    <div class="tree-node-info">
+        <div class="info-item">
+            <i class="fas fa-route"></i>
+            <span><strong>{{ node.duration }} km</strong></span>
+        </div>
+        {% if node.parent %}
+        <div class="info-item">
+            <i class="fas fa-level-up-alt"></i>
+            <span>Parent: {{ node.parent.airport_code }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    {% with left_child=node.get_left_child right_child=node.get_right_child %}
+        {% if left_child or right_child %}
+        <div class="tree-node-children">
+            {% if left_child %}
+                {% include 'flight_routes/tree_node.html' with node=left_child %}
+            {% endif %}
+            {% if right_child %}
+                {% include 'flight_routes/tree_node.html' with node=right_child %}
+            {% endif %}
+        </div>
+        {% endif %}
+    {% endwith %}
+</div>
