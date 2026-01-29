@@ -114,7 +114,7 @@ class AirportRoute(models.Model):
     @staticmethod
     def get_shortest_duration_node():
         """Find the airport with the shortest/minimum duration across entire route"""
-        return AirportRoute.objects.order_by('duration').first()
+        return AirportRoute.objects.exclude(parent=None).order_by('duration').first()
 
     def get_tree_level(self):
         """Calculate the level/depth of this node in the tree"""
